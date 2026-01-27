@@ -1,5 +1,14 @@
 name: gym-g1
 
+x-some-healthcheck: &standard-healthcheck
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # 8000 because healthcheck is performed within the container
+    interval: 5m
+    start_interval: 1s
+    start_period: 30s
+    timeout: 5s
+    retries: 5
+
 services:
   caddy:
     image: caddy:latest
