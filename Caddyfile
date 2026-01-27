@@ -1,0 +1,3 @@
+gym-g1-team-project.eu {
+    reverse_proxy web:7860
+}

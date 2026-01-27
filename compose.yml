@@ -1,0 +1,65 @@
+name: gym-g1
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - service-network
+
+  web:
+    container_name: web
+    build: ./web
+    # You can remove host ports (7860:7860) now as Caddy handles the traffic
+    environment:
+      - PREDICTION_API_URL=http://prediction-api:8000/predict
+      - PYTHONUNBUFFERED=1
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7860
+    depends_on:
+      prediction-api:
+        condition: service_healthy
+    networks:
+      - service-network
+
+  keypoints-api:
+    container_name: keypoints-api
+    build: ./apis/keypoints_api
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    <<: *standard-healthcheck
+    networks:
+      - service-network
+  
+  prediction-api:
+    container_name: prediction-api
+    build: ./apis/prediction_api
+    ports:
+      - "8004:8000"
+    environment:
+      - KEYPOINTS_API_URL=http://keypoints-api:8000/keypoints
+    depends_on:
+      keypoints-api:
+        condition: service_healthy
+    <<: *standard-healthcheck
+    networks:
+      - service-network
+
+networks:
+  service-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+

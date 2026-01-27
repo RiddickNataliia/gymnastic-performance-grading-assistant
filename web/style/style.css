@@ -1,0 +1,21 @@
+.title-centered { 
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+* {
+    font-family: "Comic Sans MS", sans-serif !important;
+}
+
+thead {
+    font-weight: bolder;
+}
+
+th > div> div > button > span { text-align: center !important;}
+
+footer {
+    visibility: hidden;
+}

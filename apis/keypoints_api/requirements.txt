@@ -1,0 +1,5 @@
+fastapi[standard]
+pandas
+numpy
+opencv-python
+mediapipe==0.10.14
