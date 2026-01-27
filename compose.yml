@@ -1,3 +1,14 @@
+name: gym-g1
+
+x-some-healthcheck: &standard-healthcheck
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # 8000 because healthcheck is performed within the container
+    interval: 5m
+    start_interval: 1s
+    start_period: 30s
+    timeout: 5s
+    retries: 5
+
 services:
   caddy:
     image: caddy:latest
@@ -10,18 +21,28 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
     networks:
       - service-network
 
   web:
     container_name: web
     build: ./web
-    # You can remove host ports (7860:7860) now as Caddy handles the traffic
+    ports:
+      - "7860:7860"
     environment:
       - PREDICTION_API_URL=http://prediction-api:8000/predict
       - PYTHONUNBUFFERED=1
       - GRADIO_SERVER_NAME=0.0.0.0
       - GRADIO_SERVER_PORT=7860
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       prediction-api:
         condition: service_healthy
@@ -35,11 +56,7 @@ services:
       - "8001:8000"
     environment:
       - PYTHONUNBUFFERED=1
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # 8000 because healthcheck is performed within the container
-      interval: 30s
-      timeout: 5s
-      retries: 5
+    <<: *standard-healthcheck
     networks:
       - service-network
   
@@ -53,11 +70,7 @@ services:
     depends_on:
       keypoints-api:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # 8000 because healthcheck is performed within the container
-      interval: 30s
-      timeout: 5s
-      retries: 5
+    <<: *standard-healthcheck
     networks:
       - service-network
 
