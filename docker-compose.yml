@@ -1,14 +1,5 @@
 name: gym-g1
 
-x-some-healthcheck: &standard-healthcheck
-  healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # 8000 because healthcheck is performed within the container
-    interval: 5m
-    start_interval: 1s
-    start_period: 30s
-    timeout: 5s
-    retries: 5
-
 services:
   caddy:
     image: caddy:latest
@@ -46,7 +37,13 @@ services:
       - "8001:8000"
     environment:
       - PYTHONUNBUFFERED=1
-    <<: *standard-healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # 8000 because healthcheck is performed within the container
+      interval: 5m
+      start_interval: 1s
+      start_period: 30s
+      timeout: 5s
+      retries: 5
     networks:
       - service-network
   
@@ -60,7 +57,13 @@ services:
     depends_on:
       keypoints-api:
         condition: service_healthy
-    <<: *standard-healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # 8000 because healthcheck is performed within the container
+      interval: 5m
+      start_interval: 1s
+      start_period: 30s
+      timeout: 5s
+      retries: 5
     networks:
       - service-network
 
